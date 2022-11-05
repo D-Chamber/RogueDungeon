@@ -1,27 +1,33 @@
-namespace RogueDungeon;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-public class Notification
+namespace StarterGame
 {
-    public Notification() : this("NotificationName")
+    public class Notification
     {
-    }
+        public String Name { get; set; }
+        public Object Object { get; set; }
+        public Dictionary<String, Object> UserInfo { get; set; }
+        public Notification() : this("NotificationName")
+        {
+        }
 
-    public Notification(string name) : this(name, null)
-    {
-    }
+        public Notification(String name) : this(name, null)
+        {
+        }
 
-    public Notification(string name, object obj) : this(name, obj, null)
-    {
-    }
+        public Notification(String name, Object obj) : this(name, obj, null)
+        {
+        }
 
-    public Notification(string name, object obj, Dictionary<string, object> userInfo)
-    {
-        Name = name;
-        Object = obj;
-        UserInfo = userInfo;
+        public Notification(String name, Object obj, Dictionary<String, Object> userInfo)
+        {
+            this.Name = name;
+            this.Object = obj;
+            this.UserInfo = userInfo;
+        }
     }
-
-    public string Name { get; set; }
-    public object Object { get; set; }
-    public Dictionary<string, object> UserInfo { get; set; }
 }

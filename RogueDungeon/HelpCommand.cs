@@ -1,29 +1,33 @@
-﻿namespace RogueDungeon;
+﻿using System.Collections;
+using System.Collections.Generic;
 
-public class HelpCommand : Command
+namespace StarterGame
 {
-    private readonly CommandWords _words;
-
-    public HelpCommand() : this(new CommandWords())
+    public class HelpCommand : Command
     {
-    }
+        private CommandWords _words;
 
-    // Designated Constructor
-    public HelpCommand(CommandWords commands)
-    {
-        _words = commands;
-        Name = "help";
-    }
+        public HelpCommand() : this(new CommandWords()){}
 
-    override
+        // Designated Constructor
+        public HelpCommand(CommandWords commands) : base()
+        {
+            _words = commands;
+            this.Name = "help";
+        }
+
+        override
         public bool Execute(Player player)
-    {
-        if (HasSecondWord())
-            player.OutputMessage("\nI cannot help you with " + SecondWord);
-        else
-            player.OutputMessage(
-                "\nYou are lost. You are alone. You wander around the university, \n\nYour available commands are " +
-                _words.Description());
-        return false;
+        {
+            if (this.HasSecondWord())
+            {
+                player.OutputMessage("\nI cannot help you with " + this.SecondWord);
+            }
+            else
+            {
+                player.OutputMessage("\nYou are lost. You are alone. You wander around the university, \n\nYour available commands are " + _words.Description());
+            }
+            return false;
+        }
     }
 }

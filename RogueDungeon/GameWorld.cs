@@ -1,86 +1,217 @@
-namespace RogueDungeon;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
-public class GameWorld
+namespace StarterGame
 {
-    private static GameWorld _instance;
+     public class GameWorld
+     {
+          private static GameWorld _instance = null;
+          public static GameWorld Instance
+          { 
+               get 
+               { 
+                    if (_instance == null) 
+                    {
+                         _instance = new GameWorld();
+                    }
+                    return _instance;
+               }
+          }
 
-    private Room _exit;
+          private Room _entrance;
+          public Room Entrance { get { return _entrance; } }
 
-    private GameWorld()
-    {
-        CreateWorld();
-        NotificationCenter.Instance.AddObserver("PlayerDidEnterRoom", PlayerDidEnterRoom);
-        NotificationCenter.Instance.AddObserver("PlayerWillEnterRoom", PlayerWillEnterRoom);
-    }
+          private Room _exit;
+          public Room Exit { get { return _exit; } }
 
-    public static GameWorld Instance
-    {
-        get
-        {
-            if (_instance == null) _instance = new GameWorld();
-            return _instance;
-        }
-    }
+          private int counter;
 
-    public Room Entrance { get; private set; }
+          private Dictionary<Room, IWorldEvent> worldEvents = new Dictionary<Room, IWorldEvent>();
+          // private WorldMod worldMod;
 
-    public Room Exit => Exit;
+          private GameWorld()
+          {
+              CreateWorld();
+              NotificationCenter.Instance.AddObserver("PlayerDidEnterRoom", PlayerDidEnterRoom);
+              NotificationCenter.Instance.AddObserver("PlayerWillEnterRoom", PlayerWillEnterRoom);
+              counter = 0;
+          }
 
-    public void PlayerDidEnterRoom(Notification notification)
-    {
-        var player = (Player)notification.Object;
-        if (player != null) player.OutputMessage($"The player is {player.CurrentRoom.Tag}.");
-    }
+          public void PlayerDidEnterRoom(Notification notification) 
+          {
+               Player player = (Player)notification.Object;
+               if (player != null)
+               {
+                    if (player.CurrentRoom == Exit)
+                    {
+                         player.OutputMessage("\n*** The player reached the exit.");
+                         counter++;
+                         if (counter == 5)
+                         {
+                              // Exit.SetExit("shortcut", Entrance);
+                              // Entrance.SetExit("shortcut", Exit);
+                         }
+                    }
 
-    public void PlayerWillEnterRoom(Notification notification)
-    {
-        var player = (Player)notification.Object;
-        if (player != null) player.OutputMessage($"The player is about to leave {player.CurrentRoom.Tag}");
-    }
+                    if (player.CurrentRoom == Entrance)
+                    {
+                         player.OutputMessage("\n*** The player came back to the entrance.");
+                    }
 
-    private void CreateWorld()
-    {
-        var outside = new Room("outside the main entrance of the university");
-        var scctparking = new Room("in the parking lot at SCCT");
-        var boulevard = new Room("on the boulevard");
-        var universityParking = new Room("in the parking lot at University Hall");
-        var parkingDeck = new Room("in the parking deck");
-        var scct = new Room("in the SCCT building");
-        var theGreen = new Room("in the green in from of Schuster Center");
-        var universityHall = new Room("in University Hall");
-        var schuster = new Room("in the Schuster Center");
+                    IWorldEvent worldEvent = null;
+                    worldEvents.TryGetValue(player.CurrentRoom, out worldEvent);
+                    if (worldEvent != null)
+                    {
+                         worldEvent.Execute();
+                         player.OutputMessage("\n%%% There is a change in the world. %%%\n");
+                         RemoveWorldEvent(worldEvent);
+                    }
+               }
+          }
 
-        outside.SetExit("west", boulevard);
+          public void PlayerWillEnterRoom(Notification notification)
+          {
+               Player player = (Player)notification.Object;
+               if (player != null)
+               {
+                    if (player.CurrentRoom == Entrance)
+                    {
+                         player.OutputMessage("\n>>> The player is leaving the entrance.");
+                    }
+                    if (player.CurrentRoom == Exit)
+                    {
+                         player.OutputMessage("\n>>> The player is going away from the exit.");
+                    }
+               }
+          }
 
-        boulevard.SetExit("east", outside);
-        boulevard.SetExit("south", scctparking);
-        boulevard.SetExit("west", theGreen);
-        boulevard.SetExit("north", universityParking);
+          private void AddWorldEvent(IWorldEvent worldEvent)
+          {
+               worldEvents[worldEvent.Trigger] = worldEvent;
+          }
 
-        scctparking.SetExit("west", scct);
-        scctparking.SetExit("north", boulevard);
+          private void RemoveWorldEvent(IWorldEvent worldEvent)
+          {
+               worldEvents.Remove(worldEvent.Trigger);
+          }
 
-        scct.SetExit("east", scctparking);
-        scct.SetExit("north", schuster);
+          private void CreateWorld()
+          {
+               Room outside = new Room("outside the main entrance of the university");
+               Room scctparking = new Room("in the parking lot at SCCT");
+               Room boulevard = new Room("on the boulevard");
+               Room universityParking = new Room("in the parking lot at University Hall");
+               Room parkingDeck = new Room("in the parking deck");
+               Room scct = new Room("in the SCCT building");
+               Room theGreen = new Room("in the green in front of Schuster Center");
+               Room universityHall = new Room("in University Hall");
+               Room schuster = new Room("in the Schuster Center");
 
-        schuster.SetExit("south", scct);
-        schuster.SetExit("north", universityHall);
-        schuster.SetExit("east", theGreen);
+               // Connect the Rooms
+               // outside.SetExit("west", boulevard);
+               // boulevard.SetExit("east", outside);
+               
+               // Door door = new Door(boulevard, outside);
+               // boulevard.SetExit("east", door);
+               // outside.SetExit("west", door);
+               Door door = Door.CreateDoor(boulevard, outside, "east", "west");
+               
+               // boulevard.SetExit("south", scctparking);
+               // scctparking.SetExit("north", boulevard);
+               door = Door.CreateDoor(boulevard, scctparking, "south", "north");
 
-        theGreen.SetExit("west", schuster);
-        theGreen.SetExit("east", boulevard);
+               // boulevard.SetExit("west", theGreen);
+               // theGreen.SetExit("east", boulevard);
+               door = Door.CreateDoor(boulevard, theGreen, "west", "east");
 
-        universityHall.SetExit("south", schuster);
-        universityHall.SetExit("east", universityParking);
+               // boulevard.SetExit("north", universityParking);
+               // universityParking.SetExit("south", boulevard);
+               door = Door.CreateDoor(boulevard, universityHall, "north", "south");
+               
+               // scctparking.SetExit("west", scct);
+               // scct.SetExit("east", scctparking);
+               door = Door.CreateDoor(scctparking, scct, "west", "east");
 
-        universityParking.SetExit("south", boulevard);
-        universityParking.SetExit("west", universityHall);
-        universityParking.SetExit("north", parkingDeck);
+               // scct.SetExit("north", schuster);
+               // schuster.SetExit("south", scct);
+               door = Door.CreateDoor(scct, schuster, "north", "south");
 
-        parkingDeck.SetExit("south", universityParking);
+               // schuster.SetExit("north", universityHall);
+               // universityHall.SetExit("south", schuster);
+               door = Door.CreateDoor(schuster, universityHall, "north", "south");
 
-        // assign special rooms
-        Entrance = outside;
-        _exit = universityHall;
-    }
+               // schuster.SetExit("east", theGreen);
+               // theGreen.SetExit("west", schuster);
+               door = Door.CreateDoor(schuster, theGreen, "east", "west");
+
+               // universityHall.SetExit("east", universityParking);
+               // universityParking.SetExit("west", universityHall);
+               door = Door.CreateDoor(
+                    universityHall, universityParking, "east", "west"
+                    );
+
+               // universityParking.SetExit("north", parkingDeck);
+               // parkingDeck.SetExit("south", universityParking);
+               door = Door.CreateDoor(
+                    universityParking, parkingDeck, "north", "south"
+                    );
+
+               // Extra rooms
+               Room davidson = new Room("in the Davidson Center");
+               Room clockTower = new Room("at the Clock Tower");
+               Room greekCenter = new Room("at the Greek Center");
+               Room woodall = new Room("at Woodall Hall");
+
+               // Connect the Davidson to Clock Tower and others
+               // davidson.SetExit("west", clockTower);
+               // clockTower.SetExit("east", davidson);
+               door = Door.CreateDoor(davidson, clockTower, "west", "east");
+               
+               // clockTower.SetExit("north", greekCenter);
+               // greekCenter.SetExit("south", clockTower);
+               door = Door.CreateDoor(clockTower, greekCenter, "north", "south");
+
+               // clockTower.SetExit("south", woodall);
+               // woodall.SetExit("north", clockTower);
+               door = Door.CreateDoor(clockTower, woodall, "south", "north");
+
+               // Setup connection
+               IWorldEvent worldMod = new WorldMod(
+                    parkingDeck, schuster, davidson, "east", "west"
+                    );
+               AddWorldEvent(worldMod);
+
+               // Create Lumpkin Center and Recreation Center
+               Room lumpkin = new Room("in the Lumpkin Center");
+               Room recreation = new Room("in the Recreation Center");
+
+               // Connect Lumpkin Center to Recreation Center
+               // lumpkin.SetExit("west", recreation);
+               // recreation.SetExit("east", lumpkin);
+               door = Door.CreateDoor(lumpkin, recreation, "west", "east");
+
+               // Setup connection
+               worldMod = new WorldMod(
+                    scct, parkingDeck, lumpkin, "south", "north"
+                    );
+               AddWorldEvent(worldMod);
+
+               worldMod = new WorldMod(
+                    woodall, recreation, greekCenter, "east", "west"
+                    );
+               AddWorldEvent(worldMod);
+
+               // Setup rooms with delegates
+               IRoomDelegate trapRoom = new TrapRoom();
+               scct.Delegate = trapRoom;
+
+               IRoomDelegate echoRoom = new EchoRoom();
+               parkingDeck.Delegate = echoRoom;
+
+               // assign special rooms
+               _entrance = outside;
+               _exit = schuster;
+          }
+     }
 }

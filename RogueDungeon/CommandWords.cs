@@ -1,35 +1,44 @@
-﻿namespace RogueDungeon;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System;
 
-public class CommandWords
+namespace StarterGame
 {
-    private static readonly Command[] commandArray = { new GoCommand(), new QuitCommand() };
-    private readonly Dictionary<string, Command> commands;
-
-    public CommandWords() : this(commandArray)
+    public class CommandWords
     {
-    }
+        private Dictionary<string, Command> commands;
+        private static Command[] commandArray = { new GoCommand(), new QuitCommand(), new SayCommand() };
 
-    // Designated Constructor
-    public CommandWords(Command[] commandList)
-    {
-        commands = new Dictionary<string, Command>();
-        foreach (var command in commandList) commands[command.Name] = command;
-        Command help = new HelpCommand(this);
-        commands[help.Name] = help;
-    }
+        public CommandWords() : this(commandArray) {}
 
-    public Command Get(string word)
-    {
-        Command command = null;
-        commands.TryGetValue(word, out command);
-        return command;
-    }
+        // Designated Constructor
+        public CommandWords(Command[] commandList)
+        {
+            commands = new Dictionary<string, Command>();
+            foreach (Command command in commandList)
+            {
+                commands[command.Name] = command;
+            }
+            Command help = new HelpCommand(this);
+            commands[help.Name] = help;
+        }
 
-    public string Description()
-    {
-        var commandNames = "";
-        var keys = commands.Keys;
-        foreach (var commandName in keys) commandNames += " " + commandName;
-        return commandNames;
+        public Command Get(string word)
+        {
+            Command command = null;
+            commands.TryGetValue(word, out command);
+            return command;
+        }
+
+        public string Description()
+        {
+            string commandNames = "";
+            Dictionary<string, Command>.KeyCollection keys = commands.Keys;
+            foreach (string commandName in keys)
+            {
+                commandNames += " " + commandName;
+            }
+            return commandNames;
+        }
     }
 }

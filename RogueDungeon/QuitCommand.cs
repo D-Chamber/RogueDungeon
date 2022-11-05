@@ -1,22 +1,26 @@
-﻿namespace RogueDungeon;
+﻿using System.Collections;
+using System.Collections.Generic;
 
-public class QuitCommand : Command
+namespace StarterGame
 {
-    public QuitCommand()
+    public class QuitCommand : Command
     {
-        Name = "quit";
-    }
 
-    override
-        public bool Execute(Player player)
-    {
-        var answer = true;
-        if (HasSecondWord())
+        public QuitCommand() : base()
         {
-            player.OutputMessage("\nI cannot quit " + SecondWord);
-            answer = false;
+            this.Name = "quit";
         }
 
-        return answer;
+        override
+        public bool Execute(Player player)
+        {
+            bool answer = true;
+            if (this.HasSecondWord())
+            {
+                player.OutputMessage("\nI cannot quit " + this.SecondWord);
+                answer = false;
+            }
+            return answer;
+        }
     }
 }

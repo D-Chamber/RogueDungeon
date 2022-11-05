@@ -1,28 +1,27 @@
-﻿namespace RogueDungeon;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System;
 
-public abstract class Command
+namespace StarterGame
 {
-    public Command()
+    public abstract class Command
     {
-        Name = "";
-        SecondWord = null;
+        private string _name;
+        public string Name { get { return _name; } set { _name = value; } }
+        private string _secondWord;
+        public string SecondWord { get { return _secondWord; } set { _secondWord = value; } }
+
+        public Command()
+        {
+            this.Name = "";
+            this.SecondWord = null;
+        }
+
+        public bool HasSecondWord()
+        {
+            return this.SecondWord != null;
+        }
+
+        public abstract bool Execute(Player player);
     }
-
-    public string Name { get; set; }
-
-    public string SecondWord { get; set; }
-
-    public string ThirdWord { get; set; }
-
-    public bool HasSecondWord()
-    {
-        return SecondWord != null;
-    }
-
-    public bool HasThirdWord()
-    {
-        return ThirdWord != null;
-    }
-
-    public abstract bool Execute(Player player);
 }

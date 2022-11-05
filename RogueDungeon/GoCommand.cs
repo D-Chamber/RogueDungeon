@@ -1,19 +1,28 @@
-﻿namespace RogueDungeon;
+﻿using System.Collections;
+using System.Collections.Generic;
 
-public class GoCommand : Command
+namespace StarterGame
 {
-    public GoCommand()
+    public class GoCommand : Command
     {
-        Name = "go";
-    }
 
-    override
+        public GoCommand() : base()
+        {
+            this.Name = "go";
+        }
+
+        override
         public bool Execute(Player player)
-    {
-        if (HasSecondWord())
-            player.WaltTo(SecondWord);
-        else
-            player.OutputMessage("\nGo Where?");
-        return false;
+        {
+            if (this.HasSecondWord())
+            {
+                player.WaltTo(this.SecondWord);
+            }
+            else
+            {
+                player.OutputMessage("\nGo Where?");
+            }
+            return false;
+        }
     }
 }

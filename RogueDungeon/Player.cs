@@ -1,32 +1,59 @@
-﻿namespace RogueDungeon;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System;
 
-public class Player
+namespace StarterGame
 {
-    public Player(Room room)
+    public class Player
     {
-        CurrentRoom = room;
-    }
-
-    public Room CurrentRoom { get; set; }
-
-    public void WaltTo(string direction)
-    {
-        var nextRoom = CurrentRoom.GetExit(direction);
-        if (nextRoom != null)
+        private Room _currentRoom = null;
+        public Room CurrentRoom
         {
-            NotificationCenter.Instance.PostNotification(new Notification("PlayerWillEnterRoom", this));
-            CurrentRoom = nextRoom;
-            NotificationCenter.Instance.PostNotification(new Notification("PlayerDidEnterRoom", this));
-            OutputMessage("\n" + CurrentRoom.Description());
+            get
+            {
+                return _currentRoom;
+            }
+            set
+            {
+                _currentRoom = value;
+            }
         }
-        else
+
+        public Player(Room room)
         {
-            OutputMessage("\nThere is no door on " + direction);
+            _currentRoom = room;
+        }
+
+        public void WaltTo(string direction)
+        {
+            Door door = this.CurrentRoom.GetExit(direction);
+            if (door != null)
+            {
+                Room nextRoom = door.RoomOnTheOtherSideOf(CurrentRoom);
+                NotificationCenter.Instance.PostNotification(new Notification("PlayerWillEnterRoom", this));
+                this.CurrentRoom = nextRoom;
+                NotificationCenter.Instance.PostNotification(new Notification("PlayerDidEnterRoom", this));
+                this.OutputMessage("\n" + this.CurrentRoom.Description());
+            }
+            else
+            {
+                this.OutputMessage("\nThere is no door on " + direction);
+            }
+        }
+
+        public void Say(string word)
+        {
+            OutputMessage("\nYou said " + word);
+            Dictionary<string, Object> userInfo = new Dictionary<string, Object>();
+            userInfo["word"] = word;
+            Notification notification = new Notification("PlayerDidSayWord", this, userInfo);
+            NotificationCenter.Instance.PostNotification(notification);
+        }
+
+        public void OutputMessage(string message)
+        {
+            Console.WriteLine(message);
         }
     }
 
-    public void OutputMessage(string message)
-    {
-        Console.WriteLine(message);
-    }
 }
