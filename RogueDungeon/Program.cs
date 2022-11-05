@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace StarterGame
+namespace RogueDungeon
 {
     class Program
     {

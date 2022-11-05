@@ -1,4 +1,4 @@
-namespace StarterGame;
+namespace RogueDungeon;
 
 public class Door
 {

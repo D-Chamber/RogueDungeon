@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StarterGame
+namespace RogueDungeon
 {
     public class Notification
     {
